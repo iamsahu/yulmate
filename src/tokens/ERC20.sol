@@ -1,6 +1,8 @@
 pragma solidity ^0.8.0;
 
 contract ERC20 {
+    string public name;
+    string public symbol;
     uint256 public totalSupply;
     uint8 public decimals;
 
@@ -15,19 +17,11 @@ contract ERC20 {
         uint256 value
     );
 
-    // function totalSupply() external view returns (uint256) {
-    //     assembly {
-    //         return(0x00, 0x20)
-    //     }
-    // }
-
-    // function balanceOf(address account) external view returns (uint256) {
-    //     assembly{
-    //         let val := keccak256(account, 0x03)
-    //         mstore(0x0, val)
-    //         return(0x0, 32)
-    //     }
-    // }
+    constructor(string memory _name, string memory _symbol, uint8 _decimals) {
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
+    }
 
     function transfer(
         address recipient,
@@ -39,9 +33,11 @@ contract ERC20 {
             mstore(0x20, balanceOf.slot)
             let balanceOfSenderOffSet := keccak256(0x00, 0x40)
             let balanceOfSender := sload(balanceOfSenderOffSet)
-            // if iszero(lt(balanceOfSender, amount)) {
-            //     revert(0x0, 0x0)
-            // }
+            if iszero(gt(balanceOfSender, amount)) {
+                if iszero(eq(balanceOfSender, amount)) {
+                    revert(0x0, 0x0)
+                }
+            }
 
             // increment recipient balance
             mstore(0x00, recipient)
@@ -76,26 +72,22 @@ contract ERC20 {
             offset := keccak256(0x00, 0x40)
 
             let allowanceOfCaller := sload(offset)
-            // let g := gt(allowanceOfCaller, amount)
-            // if iszero(g) {
-            //     let equalAllowance := eq(allowanceOfCaller, amount)
-            //     if iszero(equalAllowance) {
-            //         revert(0x0, 0x0)
-            //     }
-            // }
+            if iszero(gt(allowanceOfCaller, amount)) {
+                if iszero(eq(allowanceOfCaller, amount)) {
+                    revert(0x0, 0x0)
+                }
+            }
 
             // Check if the sender has sufficient balance
             mstore(0x00, sender)
             mstore(0x20, balanceOf.slot)
             let senderBalanceOffset := keccak256(0x00, 0x40)
             let balanceOfSender := sload(senderBalanceOffset)
-            // g := gt(balanceOfSender, amount)
-            // if iszero(g) {
-            //     let equalBalance := eq(balanceOfSender, amount)
-            //     if iszero(equalBalance) {
-            //         revert(0x0, 0x0)
-            //     }
-            // }
+            if iszero(gt(balanceOfSender, amount)) {
+                if iszero(eq(balanceOfSender, amount)) {
+                    revert(0x0, 0x0)
+                }
+            }
 
             // Decrement allowance
             let newAllowanceOfCaller := sub(allowanceOfCaller, amount)
@@ -142,8 +134,21 @@ contract ERC20 {
             // Increment allowance
             let newAllowanceOfCaller := add(allowanceOfCaller, amount)
             sstore(offset, newAllowanceOfCaller)
+
+            // Emit event
+            mstore(0x00, amount)
+            log3(
+                0x00,
+                0x20,
+                0x5c52a5f2b86fd16be577188b5a83ef1165faddc00b137b10285f16162e17792a,
+                caller(),
+                spender
+            )
+
+            // Return true
+            mstore(0x0, 0x01)
+            return(0x0, 32)
         }
-        return true;
     }
 
     function mint(address account, uint256 amount) external {
@@ -171,15 +176,4 @@ contract ERC20 {
             )
         }
     }
-
-    // function allowance(
-    //     address owner,
-    //     address spender
-    // ) external view returns (uint256) {}
-
-    function name() external view returns (string memory) {}
-
-    function symbol() external view returns (string memory) {}
-
-    // function decimals() external view returns (uint8) {}
 }

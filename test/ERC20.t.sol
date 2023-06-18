@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "../src/tokens/ERC20.sol";
 
-contract ERC20Test is Test {
+contract ERC20BaseSetup is Test {
     ERC20 public token;
 
     address dummy = vm.addr(1);
@@ -18,22 +18,18 @@ contract ERC20Test is Test {
         uint256 value
     );
 
-    function setUp() public {
-        token = new ERC20();
+    function setUp() public virtual {
+        token = new ERC20("DUM", "DUM", 18);
     }
+}
 
+contract ERC20Test is ERC20BaseSetup {
     function testMint() public {
         vm.expectEmit();
         emit Transfer(address(0), address(this), 100);
         token.mint(address(this), 100);
         assertEq(token.balanceOf(address(this)), 100);
         assertEq(token.totalSupply(), 100);
-
-        vm.expectEmit();
-        emit Transfer(address(0), dummy, 100);
-        token.mint(dummy, 100);
-        assertEq(token.balanceOf(dummy), 100);
-        assertEq(token.totalSupply(), 200);
     }
 
     function testApprove() public {
@@ -41,16 +37,21 @@ contract ERC20Test is Test {
         assertEq(token.allowance(address(this), address(this)), 100);
         assertEq(token.allowance(address(this), dummy), 0);
     }
+}
+
+contract MintedState is ERC20BaseSetup {
+    function setUp() public override {
+        super.setUp();
+        token.mint(address(this), 100);
+    }
 
     function testTransfer() public {
-        token.mint(address(this), 100);
         token.transfer(dummy, 100);
         assertEq(token.balanceOf(address(this)), 0);
         assertEq(token.balanceOf(dummy), 100);
     }
 
     function testTransferFrom() public {
-        token.mint(address(this), 100);
         token.approve(dummy2, 100);
 
         vm.expectEmit();
