@@ -27,6 +27,7 @@ contract ERC20 {
         address recipient,
         uint256 amount
     ) external returns (bool) {
+        
         assembly {
             // check if sender has sufficient balance
             mstore(0x00, caller())
@@ -175,5 +176,33 @@ contract ERC20 {
                 account
             )
         }
+    }
+
+    function burn(address from, uint256 amount) external {
+
+        assembly {
+            // Decrement totalSupply
+            let newTotalSupply := sub(sload(totalSupply.slot), amount)
+            sstore(totalSupply.slot, newTotalSupply)
+
+            // Decrement account balance
+            mstore(0x00, from)
+            mstore(0x20, balanceOf.slot)
+            let balanceOfFromOffSet := keccak256(0x00, 0x40)
+            let balanceOfFrom := sload(balanceOfFromOffSet)
+            let newBalanceOfFrom := sub(balanceOfFrom, amount)
+            sstore(balanceOfFromOffSet, newBalanceOfFrom)
+
+            // Emit Event
+            mstore(0x00, amount)
+            log3(
+                0x00,
+                0x20,
+                0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                from,
+                0x00
+            )
+        }
+
     }
 }
