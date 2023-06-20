@@ -26,10 +26,7 @@ abstract contract MintedState is BaseSetup {
 
 contract TestBasics is BaseSetup {
     function testMETADATA() public {
-        assertEq(
-            token.tokenURI(0),
-            "https://example.com/asdfasdfasdfasdfasdfasdfasdfa/0"
-        );
+        assertEq(token.tokenURI(0), "https://example.com/asdfasdfasdfasdfasdfasdfasdfa/0");
         assertEq(token.name(), "DUM");
         assertEq(token.symbol(), "DUM");
     }

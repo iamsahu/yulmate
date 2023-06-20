@@ -11,11 +11,7 @@ contract ERC20 {
 
     event Transfer(address indexed from, address indexed to, uint256 value);
 
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 
     constructor(string memory _name, string memory _symbol, uint8 _decimals) {
         name = _name;
@@ -23,22 +19,14 @@ contract ERC20 {
         decimals = _decimals;
     }
 
-    function transfer(
-        address recipient,
-        uint256 amount
-    ) external returns (bool) {
-        
+    function transfer(address recipient, uint256 amount) external returns (bool) {
         assembly {
             // check if sender has sufficient balance
             mstore(0x00, caller())
             mstore(0x20, balanceOf.slot)
             let balanceOfSenderOffSet := keccak256(0x00, 0x40)
             let balanceOfSender := sload(balanceOfSenderOffSet)
-            if iszero(gt(balanceOfSender, amount)) {
-                if iszero(eq(balanceOfSender, amount)) {
-                    revert(0x0, 0x0)
-                }
-            }
+            if iszero(gt(balanceOfSender, amount)) { if iszero(eq(balanceOfSender, amount)) { revert(0x0, 0x0) } }
 
             // increment recipient balance
             mstore(0x00, recipient)
@@ -58,11 +46,7 @@ contract ERC20 {
         }
     }
 
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool) {
         assembly {
             // Check if the caller has the approval
             mstore(0x00, sender)
@@ -73,22 +57,14 @@ contract ERC20 {
             offset := keccak256(0x00, 0x40)
 
             let allowanceOfCaller := sload(offset)
-            if iszero(gt(allowanceOfCaller, amount)) {
-                if iszero(eq(allowanceOfCaller, amount)) {
-                    revert(0x0, 0x0)
-                }
-            }
+            if iszero(gt(allowanceOfCaller, amount)) { if iszero(eq(allowanceOfCaller, amount)) { revert(0x0, 0x0) } }
 
             // Check if the sender has sufficient balance
             mstore(0x00, sender)
             mstore(0x20, balanceOf.slot)
             let senderBalanceOffset := keccak256(0x00, 0x40)
             let balanceOfSender := sload(senderBalanceOffset)
-            if iszero(gt(balanceOfSender, amount)) {
-                if iszero(eq(balanceOfSender, amount)) {
-                    revert(0x0, 0x0)
-                }
-            }
+            if iszero(gt(balanceOfSender, amount)) { if iszero(eq(balanceOfSender, amount)) { revert(0x0, 0x0) } }
 
             // Decrement allowance
             let newAllowanceOfCaller := sub(allowanceOfCaller, amount)
@@ -107,13 +83,7 @@ contract ERC20 {
 
             // Emit event
             mstore(0x00, amount)
-            log3(
-                0x00,
-                0x20,
-                0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
-                sender,
-                recipient
-            )
+            log3(0x00, 0x20, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef, sender, recipient)
 
             // Return true
             mstore(0x0, 0x01)
@@ -138,13 +108,7 @@ contract ERC20 {
 
             // Emit event
             mstore(0x00, amount)
-            log3(
-                0x00,
-                0x20,
-                0x5c52a5f2b86fd16be577188b5a83ef1165faddc00b137b10285f16162e17792a,
-                caller(),
-                spender
-            )
+            log3(0x00, 0x20, 0x5c52a5f2b86fd16be577188b5a83ef1165faddc00b137b10285f16162e17792a, caller(), spender)
 
             // Return true
             mstore(0x0, 0x01)
@@ -168,18 +132,11 @@ contract ERC20 {
 
             // Emit Event
             mstore(0x00, amount)
-            log3(
-                0x00,
-                0x20,
-                0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
-                0x00,
-                account
-            )
+            log3(0x00, 0x20, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef, 0x00, account)
         }
     }
 
     function burn(address from, uint256 amount) external {
-
         assembly {
             // Decrement totalSupply
             let newTotalSupply := sub(sload(totalSupply.slot), amount)
@@ -195,14 +152,7 @@ contract ERC20 {
 
             // Emit Event
             mstore(0x00, amount)
-            log3(
-                0x00,
-                0x20,
-                0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
-                from,
-                0x00
-            )
+            log3(0x00, 0x20, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef, from, 0x00)
         }
-
     }
 }
