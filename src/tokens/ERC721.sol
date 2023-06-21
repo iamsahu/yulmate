@@ -1,9 +1,21 @@
 pragma solidity ^0.8.0;
 
 contract ERC721 {
-    event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
-    event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
-    event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
+    event Transfer(
+        address indexed _from,
+        address indexed _to,
+        uint256 indexed _tokenId
+    );
+    event Approval(
+        address indexed _owner,
+        address indexed _approved,
+        uint256 indexed _tokenId
+    );
+    event ApprovalForAll(
+        address indexed _owner,
+        address indexed _operator,
+        bool _approved
+    );
 
     mapping(address => uint256) internal _balanceOf;
     mapping(uint256 => address) internal _ownerOf;
@@ -16,7 +28,11 @@ contract ERC721 {
 
     mapping(address => mapping(address => bool)) public isApprovedForAll;
 
-    constructor(string memory _name, string memory _symbol, string memory _baseURI) {
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        string memory _baseURI
+    ) {
         name = _name;
         symbol = _symbol;
         baseURI = _baseURI;
@@ -27,7 +43,9 @@ contract ERC721 {
             mstore(0x00, _owner)
             mstore(0x20, _balanceOf.slot)
             let balanceOfOffset := keccak256(0x00, 0x40)
+
             let balanceOf := sload(balanceOfOffset)
+
             mstore(0x00, balanceOf)
             return(0x00, 32)
         }
@@ -56,7 +74,11 @@ contract ERC721 {
         // }
     }
 
-    function checkIfSmartContract(address _from, address _to, uint256 _id) internal {
+    function checkIfSmartContract(
+        address _from,
+        address _to,
+        uint256 _id
+    ) internal {
         assembly {
             // Check if code length is zero
             let codeLength := extcodesize(_to)
@@ -69,26 +91,39 @@ contract ERC721 {
                 mstore(0x40, _from)
                 mstore(0x60, _id)
                 mstore(0x80, 0x00)
-                if iszero(call(gas(), _to, selfbalance(), 0x0, 0x80, 0, 0)) { revert(0x0, 0x0) }
+                if iszero(call(gas(), _to, selfbalance(), 0x0, 0x80, 0, 0)) {
+                    revert(0x0, 0x0)
+                }
                 // Check if the return value is equal to the selector
                 returndatacopy(0, 0, returndatasize())
             }
         }
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes calldata data) external payable {
+    function safeTransferFrom(
+        address _from,
+        address _to,
+        uint256 _tokenId,
+        bytes calldata data
+    ) external payable {
         transferFrom(_from, _to, _tokenId);
-
         checkIfSmartContract(_from, _to, _tokenId);
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable {
+    function safeTransferFrom(
+        address _from,
+        address _to,
+        uint256 _tokenId
+    ) external payable {
         transferFrom(_from, _to, _tokenId);
-
         checkIfSmartContract(_from, _to, _tokenId);
     }
 
-    function transferFrom(address _from, address _to, uint256 _tokenId) public payable {
+    function transferFrom(
+        address _from,
+        address _to,
+        uint256 _tokenId
+    ) public payable {
         assembly {
             // Check if the sender is the owner
             mstore(0x00, _tokenId)
@@ -96,10 +131,14 @@ contract ERC721 {
             let ownerOfOffset := keccak256(0x00, 0x40)
             let ownerOf := sload(ownerOfOffset)
             let sender := caller()
-            if iszero(eq(sender, ownerOf)) { revert(0x00, 0x00) }
+            if iszero(eq(sender, ownerOf)) {
+                revert(0x00, 0x00)
+            }
 
             // Check if to is not zero address
-            if iszero(_to) { revert(0x00, 0x00) }
+            if iszero(_to) {
+                revert(0x00, 0x00)
+            }
 
             mstore(0x00, _tokenId)
             mstore(0x20, getApproved.slot)
@@ -115,12 +154,16 @@ contract ERC721 {
                     mstore(0x00, _from)
                     mstore(0x20, isApprovedForAll.slot)
                     let offset := keccak256(0x00, 0x40)
+
                     mstore(0x00, sender)
                     mstore(0x20, offset)
                     offset := keccak256(0x00, 0x40)
+
                     let isApprovedForAllValue := sload(offset)
 
-                    if iszero(isApprovedForAllValue) { revert(0x00, 0x00) }
+                    if iszero(isApprovedForAllValue) {
+                        revert(0x00, 0x00)
+                    }
                 }
             }
 
@@ -128,6 +171,7 @@ contract ERC721 {
             mstore(0x00, _from)
             mstore(0x20, _balanceOf.slot)
             let balanceOfOffset := keccak256(0x00, 0x40)
+
             let balanceOf := sload(balanceOfOffset)
             balanceOf := sub(balanceOf, 1)
             sstore(balanceOfOffset, balanceOf)
@@ -136,6 +180,7 @@ contract ERC721 {
             mstore(0x00, _to)
             mstore(0x20, _balanceOf.slot)
             balanceOfOffset := keccak256(0x00, 0x40)
+
             balanceOf := sload(balanceOfOffset)
             balanceOf := add(balanceOf, 1)
             sstore(balanceOfOffset, balanceOf)
@@ -151,7 +196,13 @@ contract ERC721 {
             mstore(0x00, _from)
             mstore(0x20, _to)
             mstore(0x40, _tokenId)
-            log3(0x00, 0x20, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef, _from, _to)
+            log3(
+                0x00,
+                0x20,
+                0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                _from,
+                _to
+            )
         }
     }
 
@@ -170,22 +221,33 @@ contract ERC721 {
                 mstore(0x00, sender)
                 mstore(0x20, isApprovedForAll.slot)
                 let offset := keccak256(0x00, 0x40)
+
                 mstore(0x00, _approved)
                 mstore(0x20, offset)
                 offset := keccak256(0x00, 0x40)
+
                 let isApprovedForAllValue := sload(offset)
-                if iszero(isApprovedForAllValue) { revert(0x00, 0x00) }
+                if iszero(isApprovedForAllValue) {
+                    revert(0x00, 0x00)
+                }
             }
 
             // Set the approval
             mstore(0x00, _tokenId)
             mstore(0x20, getApproved.slot)
             let getApprovedOffset := keccak256(0x00, 0x40)
+
             sstore(getApprovedOffset, _approved)
 
             // emit the approval event
             mstore(0x00, _tokenId)
-            log3(0x00, 0x20, 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925, sender, _approved)
+            log3(
+                0x00,
+                0x20,
+                0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925,
+                sender,
+                _approved
+            )
         }
     }
 
@@ -196,35 +258,50 @@ contract ERC721 {
             mstore(0x00, sender)
             mstore(0x20, isApprovedForAll.slot)
             let offset := keccak256(0x00, 0x40)
+
             mstore(0x00, _operator)
             mstore(0x20, offset)
             offset := keccak256(0x00, 0x40)
+
             sstore(offset, _approved)
 
             // emit the approval event
             mstore(0x00, 0x01)
-            log3(0x00, 0x20, 0x935230e68d0344049b3ab530b10aa82a70705c7069af8b4cb5f52671eb13d120, sender, _operator)
+            log3(
+                0x00,
+                0x20,
+                0x935230e68d0344049b3ab530b10aa82a70705c7069af8b4cb5f52671eb13d120,
+                sender,
+                _operator
+            )
         }
     }
 
     function _mint(address _to, uint256 _id) external {
         assembly {
             // Check if not zero address
-            if iszero(_to) { revert(0x00, 0x00) }
+            if iszero(_to) {
+                revert(0x00, 0x00)
+            }
 
             // Check if the token already exists
             mstore(0x00, _id)
             mstore(0x20, _ownerOf.slot)
             let ownerOfOffset := keccak256(0x00, 0x40)
+
             let ownerOf := sload(ownerOfOffset)
-            if iszero(eq(ownerOf, 0)) { revert(0x00, 0x00) }
+            if iszero(eq(ownerOf, 0)) {
+                revert(0x00, 0x00)
+            }
 
             // Increase balance of to
             mstore(0x00, _to)
             mstore(0x20, _balanceOf.slot)
             let balanceOfOffset := keccak256(0x00, 0x40)
+
             let balanceOf := sload(balanceOfOffset)
             balanceOf := add(balanceOf, 1)
+
             sstore(balanceOfOffset, balanceOf)
 
             // Set the owner of the token to to
@@ -232,7 +309,13 @@ contract ERC721 {
 
             // emit the transfer event
             mstore(0x00, _id)
-            log3(0x00, 0x20, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef, 0x00, _to)
+            log3(
+                0x00,
+                0x20,
+                0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                0x00,
+                _to
+            )
         }
     }
 
@@ -254,8 +337,10 @@ contract ERC721 {
             mstore(0x00, ownerOf)
             mstore(0x20, _balanceOf.slot)
             let balanceOfOffset := keccak256(0x00, 0x40)
+
             let balanceOf := sload(balanceOfOffset)
             balanceOf := sub(balanceOf, 1)
+
             sstore(balanceOfOffset, balanceOf)
 
             // Set the owner of the token to 0
@@ -265,11 +350,18 @@ contract ERC721 {
             mstore(0x00, id)
             mstore(0x20, getApproved.slot)
             let getApprovedOffset := keccak256(0x00, 0x40)
+
             sstore(getApprovedOffset, 0)
 
             // emit the transfer event
             mstore(0x00, id)
-            log3(0x00, 0x20, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef, ownerOf, 0x00)
+            log3(
+                0x00,
+                0x20,
+                0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                ownerOf,
+                0x00
+            )
         }
     }
 }
@@ -277,7 +369,12 @@ contract ERC721 {
 /// @notice A generic interface for a contract which properly accepts ERC721 tokens.
 /// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC721.sol)
 abstract contract ERC721TokenReceiver {
-    function onERC721Received(address, address, uint256, bytes calldata) external virtual returns (bytes4) {
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external virtual returns (bytes4) {
         return ERC721TokenReceiver.onERC721Received.selector;
     }
 }

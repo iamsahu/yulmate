@@ -43,9 +43,11 @@ abstract contract ERC1155 {
             mstore(0x00, sender)
             mstore(0x20, isApprovedForAll.slot)
             let offset := keccak256(0x00, 0x40)
+
             mstore(0x00, operator)
             mstore(0x20, offset)
             offset := keccak256(0x00, 0x40)
+            
             sstore(offset, approved)
 
             // emit the approval event
@@ -105,9 +107,11 @@ abstract contract ERC1155 {
                 mstore(0x00, from)
                 mstore(0x20, isApprovedForAll.slot)
                 let offset := keccak256(0x00, 0x40)
+
                 mstore(0x00, sender)
                 mstore(0x20, offset)
                 offset := keccak256(0x00, 0x40)
+
                 if iszero(sload(offset)) { revert(0x0, 0x0) }
             }
 
@@ -115,9 +119,11 @@ abstract contract ERC1155 {
             mstore(0x00, from)
             mstore(0x20, balanceOf.slot)
             let offset := keccak256(0x00, 0x40)
+            
             mstore(0x00, id)
             mstore(0x20, offset)
             offset := keccak256(0x00, 0x40)
+            
             let oldBalance := sload(offset)
             if lt(oldBalance, amount) { revert(0x0, 0x0) }
             let newBalance := sub(oldBalance, amount)
@@ -126,9 +132,11 @@ abstract contract ERC1155 {
             mstore(0x00, to)
             mstore(0x20, balanceOf.slot)
             offset := keccak256(0x00, 0x40)
+
             mstore(0x00, id)
             mstore(0x20, offset)
             offset := keccak256(0x00, 0x40)
+
             oldBalance := sload(offset)
             // TODO: Check for overflow
             newBalance := add(oldBalance, amount)
@@ -172,9 +180,11 @@ abstract contract ERC1155 {
                 mstore(0x00, from)
                 mstore(0x20, isApprovedForAll.slot)
                 let offset := keccak256(0x00, 0x40)
+
                 mstore(0x00, sender)
                 mstore(0x20, offset)
                 offset := keccak256(0x00, 0x40)
+
                 if iszero(sload(offset)) { revert(0x0, 0x0) } // NOT_AUTHORIZED
             }
 
@@ -193,20 +203,25 @@ abstract contract ERC1155 {
                 mstore(0x00, from)
                 mstore(0x20, balanceOf.slot)
                 let offset := keccak256(0x00, 0x40)
+
                 mstore(0x00, id)
                 mstore(0x20, offset)
                 offset := keccak256(0x00, 0x40)
+
                 let oldBalance := sload(offset)
                 if lt(oldBalance, amount) { revert(0x0, 0x0) }
                 let newBalance := sub(oldBalance, amount)
+                
                 sstore(offset, newBalance)
 
                 mstore(0x00, to)
                 mstore(0x20, balanceOf.slot)
                 offset := keccak256(0x00, 0x40)
+                
                 mstore(0x00, id)
                 mstore(0x20, offset)
                 offset := keccak256(0x00, 0x40)
+                
                 oldBalance := sload(offset)
                 // TODO: check for overflow
                 newBalance := add(oldBalance, amount)
@@ -242,7 +257,6 @@ abstract contract ERC1155 {
             if iszero(eq(ownersLength, idsLength)) { revert(0x0, 0x0) } // LENGTH_MISMATCH
 
             let idsOffset := add(0x84, mul(ownersLength, 0x20))
-
             let freememPointer := mload(0x40)
 
             for { let i := 0 } lt(i, ownersLength) { i := add(i, 1) } {
@@ -252,11 +266,15 @@ abstract contract ERC1155 {
                 mstore(0x00, owner)
                 mstore(0x20, balanceOf.slot)
                 let offset := keccak256(0x00, 0x40)
+
                 mstore(0x00, id)
                 mstore(0x20, offset)
                 offset := keccak256(0x00, 0x40)
+
                 mstore(add(add(freememPointer, 0x40), mul(i, 0x20)), sload(offset))
             }
+
+            // Return balances array
             mstore(freememPointer, 2)
             mstore(add(freememPointer, 0x20), ownersLength)
             return(freememPointer, add(mul(ownersLength, 0x20), 0x40))
@@ -296,9 +314,11 @@ abstract contract ERC1155 {
             mstore(0x00, to)
             mstore(0x20, balanceOf.slot)
             let offset := keccak256(0x00, 0x40)
+
             mstore(0x00, id)
             mstore(0x20, offset)
             offset := keccak256(0x00, 0x40)
+
             let oldBalance := sload(offset)
             let newBalance := add(oldBalance, amount)
             sstore(offset, newBalance)
@@ -341,12 +361,15 @@ abstract contract ERC1155 {
             for { let i := 0 } lt(i, idsLength) { i := add(i, 1) } {
                 let id := calldataload(add(0xA4, mul(i, 0x20)))
                 let amount := calldataload(add(amountOffset, mul(i, 0x20)))
+                
                 mstore(0x00, to)
                 mstore(0x20, balanceOf.slot)
                 let offset := keccak256(0x00, 0x40)
+                
                 mstore(0x00, id)
                 mstore(0x20, offset)
                 offset := keccak256(0x00, 0x40)
+                
                 let oldBalance := sload(offset)
                 // todo: check for overflow
                 let newBalance := add(oldBalance, amount)
@@ -378,15 +401,19 @@ abstract contract ERC1155 {
             for { let i := 0 } lt(i, idsLength) { i := add(i, 1) } {
                 let id := calldataload(add(0x84, mul(i, 0x20)))
                 let amount := calldataload(add(amountOffset, mul(i, 0x20)))
+
                 mstore(0x00, from)
                 mstore(0x20, balanceOf.slot)
                 let offset := keccak256(0x00, 0x40)
+                
                 mstore(0x00, id)
                 mstore(0x20, offset)
                 offset := keccak256(0x00, 0x40)
+                
                 let oldBalance := sload(offset)
                 if lt(oldBalance, amount) { revert(0x0, 0x0) }
                 let newBalance := sub(oldBalance, amount)
+                
                 sstore(offset, newBalance)
             }
         }
@@ -399,12 +426,15 @@ abstract contract ERC1155 {
             mstore(0x00, from)
             mstore(0x20, balanceOf.slot)
             let offset := keccak256(0x00, 0x40)
+
             mstore(0x00, id)
             mstore(0x20, offset)
             offset := keccak256(0x00, 0x40)
+            
             let oldBalance := sload(offset)
             if lt(oldBalance, amount) { revert(0x0, 0x0) }
             let newBalance := sub(oldBalance, amount)
+            
             sstore(offset, newBalance)
 
             // Emit event
